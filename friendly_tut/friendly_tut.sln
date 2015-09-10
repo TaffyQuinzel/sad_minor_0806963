@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "chapter1", "chapter1\chapter1.fsproj", "{4E451450-6568-4A61-A665-FD214075DE01}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "friendly_tut", "friendly_tut\friendly_tut.fsproj", "{4E451450-6568-4A61-A665-FD214075DE01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
