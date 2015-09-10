@@ -11,12 +11,12 @@
             else
                 (y',v')
         
-        let print_scene (y,v) =
+        let print_scene (y1,v1,y2,v2) =
             do Console.Clear()
-            let y,v = int y, int v
+            let y1,v1,y2,v2 = int y1, int v1, int y2, int v2
             for j = 10 downto 0 do
                 for i = 0 to 30 do
-                    if (y+1) = j && i = 15 then
+                    if ((y1+1) = j && i = 10) || ((y2+1) = j && i = 20) then
                         Console.Write("b")
                     elif j = 0 || i = 0 || j = 10 || i = 30 then
                         Console.Write("*")
@@ -26,9 +26,10 @@
             ignore(Console.ReadKey())
 
         let simulation () =
-            let rec simulation (y,v) =
-                do print_scene (y,v)
-                let y',v' = simulation_step (y,v)
-                if abs v' > 0.1 then
-                    do simulation (y',v')
-            do simulation (5.0,-2.0)
+            let rec simulation (y1,v1,y2,v2) =
+                do print_scene (y1,v1,y2,v2)
+                let y1',v1' = simulation_step (y1,v1)
+                let y2',v2' = simulation_step (y2,v2)
+                if abs v1' > 0.1 || abs v2' > 0.1 then
+                    do simulation (y1',v1',y2',v2')
+            do simulation (5.0,-2.0,7.0,-3.0)
