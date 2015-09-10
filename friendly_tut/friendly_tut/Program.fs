@@ -4,6 +4,6 @@ open Chapter1
 
 [<EntryPoint>]
 let main argv = 
+    do Chapter1.BallSimulation_extended.simulation()
     do Chapter1.BallSimulation.simulation()
-    do Chapter1.BallSimulation.simulation_extended()
     0 // return an integer exit code
