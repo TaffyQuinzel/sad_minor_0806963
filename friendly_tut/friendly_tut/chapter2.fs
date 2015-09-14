@@ -1,38 +1,23 @@
-namespace Chapter2
+﻿namespace Chapter2
   module RocketSimulation =
 
-    (*
-    We import the System and System.Threading modules (respectively for printing to the console and pausing the application).
-    *)
     open System
     open System.Threading
 
-    (*
-    We import the Math module we defined above; now we will be able to use the m, kg, s and N units of measure, and also the Vector2 record.
-    *)
     open Math
 
-    (*
-    We define a physical entity as a position (a vector2 in meters) and a mass (in kilograms).
-    *)
     type PhysicalEntity =
       {
         Position : Vector2<m>
         Mass     : float<kg>
       }
 
-    (*
-    A celestial body is, simply, a physical entity and an associated name for printing it to screen.
-    *)
     type CelestialBody =
       {
         Body     : PhysicalEntity
         Name     : string
       }
 
-    (*
-    A stage of our rocket contains its dry mass (in kilograms: the mass it has when empty of fuel), its current amount of fuel (in kilograms), the amount of fuel it burns (in kilograms per second) and the force it produces to push the rocket.
-    *)
     type Stage =
       {
         DryMass  : float<kg>
@@ -40,9 +25,6 @@ namespace Chapter2
         FuelBurn : float<kg/s>
         Thrust   : float<N>
       }
-      (*
-      The total mass of the stage is the sum of its dry mass and the mass of its contained fuel.
-      *)
       member this.Mass = this.DryMass + this.Fuel
 
     (*
@@ -58,9 +40,6 @@ namespace Chapter2
         Stage3   : Option<Stage>
       }
 
-    (*
-    The state of the simulation is defined as the Earth, the Moon and the rocket.
-    *)
     type ApolloMission =
       {
         Earth    : CelestialBody
@@ -163,7 +142,13 @@ namespace Chapter2
         If the stage still has fuel to burn then its value will be Some s' where s' is equal to s with less fuel:
         *)
         let stage_step s =
-          if s.Fuel <= s.FuelBurn * dt then
+          if Console.KeyAvailable then
+            Console.Beep()
+//            let dump = Console.ReadKey()
+            None
+           
+
+          elif s.Fuel <= s.FuelBurn * dt then
             Console.Beep()
             None
           else

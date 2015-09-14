@@ -49,6 +49,8 @@
   <ItemGroup>
     <None Include="App.config" />
     <Compile Include="chapter1.fs" />
+    <Compile Include="chapter2.math.fs" />
+    <Compile Include="chapter2.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <PropertyGroup>
