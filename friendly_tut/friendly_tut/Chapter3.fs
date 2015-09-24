@@ -156,52 +156,67 @@ module Chapter3
       (*
       We iterate all asteroids, and apply their velocity, bouncing and the various gravitational forces to each one.
       *)
-      [
-        for a in asteroids do
-          (*
-          We find the list of all the forces that the other asteroids apply on a. We check if two asteroids are the same with the <> operator:
-          *)
-          let forces x =
-               [
-                 for a' in asteroids do
-                   if a' <> x then
-                     yield force(x,a')
-               ]
-          (*
-          The final force that is applied on the current asteroid a is the sum of all the forces from the various asteroids:
-          *)
-          let F = List.sum (forces a)
-          (*
-          We compute the effects of bouncing with the clamp function, and then we yield the updated asteroid by increasing its position by its velocity and its velocity by its acceleration.
-          *)
-          let p',v' = clamp(a.Position,a.Velocity)
-          yield
-            {
-              a with
-                  Position = p' + dt * v'
-                  Velocity = v' + dt * F / a.Mass
-            }
+      let newAsteroids =
+        [
+          for a in asteroids do
+            (*
+            We find the list of all the forces that the other asteroids apply on a. We check if two asteroids are the same with the <> operator:
+            *)
+            let forces x =
+                 [
+                   for a' in asteroids do
+                     if a' <> x then
+                       yield force(x,a')
+                 ]
+            (*
+            The final force that is applied on the current asteroid a is the sum of all the forces from the various asteroids:
+            *)
+            let F = List.sum (forces a)
+            (*
+            We compute the effects of bouncing with the clamp function, and then we yield the updated asteroid by increasing its position by its velocity and its velocity by its acceleration.
+            *)
+            let p',v' = clamp(a.Position,a.Velocity)
 
-          for b in asteroids do
-            if a <> b then
-              let p,v = clamp_asteroids (a.Position,a.Velocity, b.Position, b.Velocity)
-              if v <> a.Velocity then
-                let Np,Nv = clamp (p,v)
-                let Nasteroid = 
-                  {
-                    Position = Np
-                    Velocity = Nv
-                    Mass = (lerp a.Mass b.Mass (rand.NextDouble())) * 1.0e-6
-                    Name = "b"
-                  }
-                let NF = List.sum (forces Nasteroid)
-                yield
-                  {
-                    Nasteroid with
-                      Position = Np + dt * Nv
-                      Velocity = Nv + dt * NF / Nasteroid.Mass
-                  }
-      ]
+            
+            yield
+              {
+                a with
+                    Position = p' + dt * v'
+                    Velocity = v' + dt * F / a.Mass
+              }
+
+           (* for b in asteroids do
+              if a <> b then
+                let p,v = clamp_asteroids (a.Position,a.Velocity, b.Position, b.Velocity)
+                if v <> a.Velocity then
+                  let Np,Nv = clamp (p,v/2.0)
+                  let Nasteroid = 
+                    {
+                      Position = Np
+                      Velocity = Nv
+                      Mass = (lerp a.Mass b.Mass (rand.NextDouble())) * 1.0e-6
+                      Name = "b"
+                    }
+                  let NF = List.sum (forces Nasteroid)
+                  yield
+                    {
+                      Nasteroid with
+                        Position = Np + dt * Nv
+                        Velocity = Nv + dt * NF / Nasteroid.Mass
+                    } *)
+        ]
+      if (Console.KeyAvailable) then 
+        let inputKey = Console.ReadKey()
+        match inputKey.Key with
+        | ConsoleKey.DownArrow -> [ for a in newAsteroids do 
+                                      let newV = a.Velocity / 2.0 
+                                      yield { a with Velocity = newV } ]
+        | ConsoleKey.UpArrow -> [ for a in newAsteroids do 
+                                    let newV = a.Velocity * 2.0 
+                                    yield { a with Velocity = newV } ]
+        | _ -> newAsteroids
+      else
+        newAsteroids
 
     (*
     The printing and simulation functions are almost the same we have seen in Chapter 2.
@@ -222,7 +237,7 @@ module Chapter3
         Console.SetCursorPosition(((b.Position.X / 4.0e8<m>) * 78.0 + 1.0) |> int, ((b.Position.Y / 4.0e8<m>) * 23.0 + 1.0) |> int)
       for a in asteroids do
         do set_cursor_on_body a
-        do Console.Write(a.Name)
+        do Console.Write(a.Velocity.Y)
       do Thread.Sleep(100)
 
     let simulation() =
