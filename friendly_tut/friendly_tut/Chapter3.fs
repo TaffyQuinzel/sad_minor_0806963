@@ -13,7 +13,7 @@ Before we dive right in the code, we will (as we did in the previous chapters) g
 - two asteroids attract each other with a gravitational force of G * m1 * m2 * dir / dist^3, where dir = p1 - p2 for the second asteroid and dir = p2 - p1 for the first asteroid; dist is the length of dir
 - when an asteroid touches the border of the field we will make it bounce it: we are simulating an "asteroid box", rather than an "asteroid field"
 *)
-module Chapter3
+namespace Chapter3
   module SmallAsteroidFieldSimulation =
 
     open System
@@ -237,7 +237,7 @@ module Chapter3
         Console.SetCursorPosition(((b.Position.X / 4.0e8<m>) * 78.0 + 1.0) |> int, ((b.Position.Y / 4.0e8<m>) * 23.0 + 1.0) |> int)
       for a in asteroids do
         do set_cursor_on_body a
-        do Console.Write(a.Velocity.Y)
+        do Console.Write(a.Name)
       do Thread.Sleep(100)
 
     let simulation() =
