@@ -15,6 +15,7 @@ type OptionBuilder() =
   member this.Zero = None
 
 let opt = OptionBuilder()
+
 let sum (a:option<'a>) (b:option<'a>) = 
   opt{
     let! a_v = a  
@@ -38,6 +39,38 @@ let x = sum i j
 printf "%A" (ret x)
 Console.ReadKey()
 
+type list<'a> =
+  | Full of 'a*list<'a>
+  | Empty
+
+type ListBuilder() =
+  member this.Bind (o:list<'a>, f:'a->list<'b>) :list<'b> = 
+    match o:list<'a> with
+    | Full (x:'a,xs:list<'a>) :list<'b> -> (f x) @ (Bind xs f)
+    | Empty -> Empty
+  member this.Return x = Full x
+  member this.Zero = Empty
+  
+let lst = ListBuilder()
+  
+let addToList (a:int) (b:list<'a>) =
+  lst{
+    return a :: b
+    
+  }
+
+
+type State<'a,'s> = 's -> ('a * 's)
+
+type StateBuilder() =
+  member this.bind (o:State<'a,'s>, f:'s -> State<'b,'s>):State<'b,'s> =
+    fun s ->
+      let (a,s') = o s
+      a s
+  member this.Return x = fun ((a:'a) * (s:'s)) -> (a,s) x
+  member this.Zero =
+  
+  
 //Type OptionBuilder (x:option<'a>) (y:option<'b>) = {
 //    this.bind(x,y)
 //    let! x_v = fun Just x -> x
