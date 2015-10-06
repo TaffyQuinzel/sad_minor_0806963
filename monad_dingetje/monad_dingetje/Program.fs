@@ -39,17 +39,17 @@ let x = sum i j
 // printf "%A" (ret x)
 // Console.ReadKey()
 
-type list<'a> =
-  | Full of 'a * list<'a>
-  | Empty
+// type list<'a> =
+//   | Full of 'a * list<'a>
+//   | Empty
 
 type ListBuilder() =
   member this.Bind (o:list<'a>, f:'a->list<'b>) :list<'b> = 
     match o:list<'a> with
-    | Full (x:'a :: xs:list<'a>) :list<'b> -> (f x) @ (this.Bind xs f)
-    | Empty -> Empty
-  member this.Return x = Full x
-  member this.Zero = Empty
+    | x::xs -> (f x) @ this.Bind (xs,f)
+    | [] -> []
+  member this.Return x = x
+  member this.Zero = []
 
 // let lst = ListBuilder()
 
@@ -63,11 +63,10 @@ type ListBuilder() =
 type State<'a,'s> = 's -> ('a * 's)
 
 type StateBuilder() =
-  member this.Bind (o:State<'a,'s>, f:'s -> State<'b,'s>):State<'b,'s> =
+  member this.Bind (o:State<'a,'s>, f:'a -> State<'b,'s>):State<'b,'s> =
     fun s ->
       let (a,s') = o s
-      let (b,s'') = f a s'
-      (b,s'')
+      f a s'
   member this.Return x  = fun (s:'s) -> x,s  
   // member this.Zero = (),o
 
@@ -90,20 +89,23 @@ type MaybeBuilder() =
 let mb = MaybeBuilder()
 
 
-type MaybeState<'a,'s> = 's -> (Result<'a> * 's)
-
+type MaybeState<'a,'s> = 's -> Result<'a * 's>
 type MaybeStateBuilder() =
-  member this.Bind (o:MaybeState<'a,'s>, f:'s -> MaybeState<'b,'s>) : MaybeState<'b,'s> =
+  member this.Bind (o:MaybeState<'a,'s>, f:Result<'a> -> MaybeState<'b,'s>) : MaybeState<'b,'s> =
     fun (s:'s) ->
-      let x,y = o s
-      match x with
-        | Done a ->
-          let v,w = f a y
-          match v with
-            | Done b -> v,w
-            | Crash b -> Crash b,w
-        | Crash a -> Crash a,y
-  member this.ReturnFrom x  = (fun s -> Done,s) x 
+      mb{
+        let a,s' = o s
+        return! f a s'
+      }
+      // let x,y = o s
+      // match x with
+      //   | Done a ->
+      //     let v,w = f a y
+      //     match v with
+      //       | Done b -> v,w
+      //       | Crash b -> Crash b,w
+      //   | Crash a -> Crash a,y
+  member this.ReturnFrom x  = fun s -> Done x,s 
   member this.Zero = Crash
 
 
@@ -112,15 +114,16 @@ let ms = MaybeStateBuilder()
 let f1 a = (fun o -> o) a
 let f2 a:State<'a,'s> = (fun o -> o) a
 
-let stateTest (i) =
-  sb{
-    return i
+let maybeStateTest (i) =
+  ms{
+    return! i
   }
-let stateTest2 (i:State<'a,'s>) =
-  sb{
-    let! a = i 
-    return (a + 4)
+let maybeStateTest2 (i:State<Result<'a>,'s>) =
+  ms{
+    let a = i
+    return! a
   }
+let createState i = Done,i    
 
 // let msTest (a:int)(w:int)=
 //   ms{
@@ -148,8 +151,10 @@ let stateTest2 (i:State<'a,'s>) =
 [<EntryPoint>]
 let main argv = 
   // printfn "%A" argv
-  let hal = stateTest 4
+  let hal = maybeStateTest 4
+  let hel = createState 3
   printfn "%A" (hal)
-  printfn "%A" (stateTest2 hal)
-  printfn "%A" (stateTest 9)
+  printfn "%A" (hel)
+  printfn "%A" (maybeStateTest2 hal hel)
+  printfn "%A" (maybeStateTest 9)
   0 // return an integer exit code
