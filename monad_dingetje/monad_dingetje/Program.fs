@@ -91,10 +91,10 @@ let mb = MaybeBuilder()
 
 type MaybeState<'a,'s> = 's -> Result<'a * 's>
 type MaybeStateBuilder() =
-  member this.Bind (o:MaybeState<'a,'s>, f:Result<'a> -> MaybeState<'b,'s>) : MaybeState<'b,'s> =
+  member this.Bind (o:MaybeState<'a,'s>, f:'a -> MaybeState<'b,'s>) : MaybeState<'b,'s> =
     fun (s:'s) ->
       mb{
-        let a,s' = o s
+        let! a,s' = o s
         return! f a s'
       }
       // let x,y = o s
