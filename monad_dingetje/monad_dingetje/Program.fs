@@ -72,7 +72,17 @@ type StateBuilder() =
 
 let sb = StateBuilder()
 
-  //----------------------------------------------
+let getState = fun(s:'s) -> s,s
+let setState newState = fun(s:'s) -> (),newState
+
+let createState i =
+  sb{
+    let! x = getState
+    do! setState (x + i)
+    return x
+  }
+
+//----------------------------------------------
 type Result<'a> = Done of 'a | Crash of string
 
 
@@ -89,6 +99,7 @@ type MaybeBuilder() =
 let mb = MaybeBuilder()
 
 
+//----------------------------------------------
 type MaybeState<'a,'s> = 's -> Result<'a * 's>
 type MaybeStateBuilder() =
   member this.Bind (o:MaybeState<'a,'s>, f:'a -> MaybeState<'b,'s>) : MaybeState<'b,'s> =
@@ -97,64 +108,45 @@ type MaybeStateBuilder() =
         let! a,s' = o s
         return! f a s'
       }
-      // let x,y = o s
-      // match x with
-      //   | Done a ->
-      //     let v,w = f a y
-      //     match v with
-      //       | Done b -> v,w
-      //       | Crash b -> Crash b,w
-      //   | Crash a -> Crash a,y
-  member this.ReturnFrom x  = fun s -> Done x,s 
+  member this.ReturnFrom x  = x  
+  member this.Return x  = fun s -> Done (x s) 
   member this.Zero = Crash
 
 
 let ms = MaybeStateBuilder()
 
-let f1 a = (fun o -> o) a
-let f2 a:State<'a,'s> = (fun o -> o) a
+let getMaybeState = fun(s:'s) -> Done(s,s)
+let setMaybeState newState = fun(s:'s) -> s,newState
 
-let maybeStateTest (i) =
+let createMaybeState(i) =
   ms{
-    return! i
+    let! x = getMaybeState
+    let y = setMaybeState (x + i)
+    return y
   }
-let maybeStateTest2 (i:State<Result<'a>,'s>) =
-  ms{
-    let a = i
-    return! a
-  }
-let createState i = Done,i    
-
-// let msTest (a:int)(w:int)=
-//   ms{
-//     let! a = (f1,1)
-//     let! w = f2 9
-//     return! w
-//   }
-
-  
-
-//Type OptionBuilder (x:option<'a>) (y:option<'b>) = {
-//    this.bind(x,y)
-//    let! x_v = fun Just x -> x
-//    let! y_v = fun Just y -> y
-//    ret (x_v + y_v)
-//  }
 
 
+//----------------------------------------------
 // type MaybeStateList<'a,'s> = 's -> (List<'a>,'s)
 
 
+//----------------------------------------------
 // type ListMaybeState<list<'a,'s>> = list<> -> 
 
 
 [<EntryPoint>]
 let main argv = 
   // printfn "%A" argv
-  let hal = maybeStateTest 4
-  let hel = createState 3
-  printfn "%A" (hal)
+  // let hal = createState f1 
+  // let hol = maybeStateTest2 f1 hal 7
+  let hel = createState 3 
+  let hal = createMaybeState 3 
+  // printfn "%A" (hal)
   printfn "%A" (hel)
-  printfn "%A" (maybeStateTest2 hal hel)
-  printfn "%A" (maybeStateTest 9)
+  printfn "%A" (hel 8)
+  printfn "%A" (hal)
+  printfn "%A" (hal 8)
+  // printfn "%A" (maybeStateTest2 hal 7)
+  // printfn "%A" (maybeStateTest2 hol 8)
+  // printfn "%A" (maybeStateTest 9)
   0 // return an integer exit code
